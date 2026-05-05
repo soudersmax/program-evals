@@ -108,7 +108,6 @@
     .filter-group select:focus { outline: none; border-color: var(--teal); }
 
     .hh-btn-group {
-      margin-left: auto;
       display: flex;
       gap: 0.5rem;
       align-items: center;
@@ -150,12 +149,6 @@
 
     .hh-generator-btn:hover { background: #1a2d3a; }
 
-    .response-count {
-      font-size: 0.8rem;
-      color: var(--muted);
-      margin-left: 0.5rem;
-      white-space: nowrap;
-    }
 
     /* ── Main content ── */
     .hh-main {
@@ -303,7 +296,6 @@
           <option value="all">All programs</option>
         </select>
       </div>
-      <span class="response-count" id="response-count"></span>
       <div class="hh-btn-group">
         <a id="generator-link" href="#" target="_blank" class="hh-generator-btn">Generate Report</a>
         <button class="hh-refresh-btn" id="refresh-btn" onclick="loadData()">↻ Refresh Data</button>
@@ -525,16 +517,17 @@
   // Filter population
   // ─────────────────────────────────────────────────────────────
   function populateFilters() {
-    // Months
-    const months = new Map(); // key → label
+    // Months — derived from program title prefix (MM/DD format, year is always 2026)
+    const months = new Map(); // key (MM) → label
     dataRows.forEach(row => {
-      const ts = row[colIdx.timestamp];
-      if (!ts) return;
-      const d = new Date(ts);
-      if (isNaN(d)) return;
-      const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
-      if (!months.has(key)) {
-        months.set(key, d.toLocaleString('default', { month: 'long', year: 'numeric' }));
+      const prog = row[colIdx.program] ? row[colIdx.program].toString().trim() : '';
+      const match = prog.match(/^(\d{2})\/\d{2}/);
+      if (!match) return;
+      const monthNum = match[1];
+      if (!months.has(monthNum)) {
+        const label = new Date(2026, parseInt(monthNum, 10) - 1, 1)
+          .toLocaleString('default', { month: 'long' }) + ' 2026';
+        months.set(monthNum, label);
       }
     });
 
@@ -585,10 +578,9 @@
 
     return dataRows.filter(row => {
       if (month !== 'all') {
-        const d = new Date(row[colIdx.timestamp]);
-        if (isNaN(d)) return false;
-        const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
-        if (key !== month) return false;
+        const prog = colIdx.program >= 0 ? row[colIdx.program] : '';
+        const match = prog ? prog.toString().match(/^(\d{2})\/\d{2}/) : null;
+        if (!match || match[1] !== month) return false;
       }
       if (program !== 'all') {
         const prog = colIdx.program >= 0 ? row[colIdx.program] : '';
@@ -683,11 +675,23 @@
             ticks: {
               color: '#233C4D',
               font: { family: 'Montserrat', size: 11 },
-              maxRotation: 45,
-              minRotation: 45,
+              maxRotation: 0,
+              minRotation: 0,
               callback: function(val) {
                 const label = this.getLabelForValue(val);
-                return label.length > 24 ? label.slice(0, 22) + '…' : label;
+                const words = label.split(' ');
+                const lines = [];
+                let line = '';
+                words.forEach(word => {
+                  if ((line + ' ' + word).trim().length > 16) {
+                    if (line) lines.push(line);
+                    line = word;
+                  } else {
+                    line = (line + ' ' + word).trim();
+                  }
+                });
+                if (line) lines.push(line);
+                return lines;
               }
             },
             grid: { display: false }
@@ -716,7 +720,7 @@
 
     wrap.style.display   = 'block';
     noData.style.display = 'none';
-    wrap.style.height    = '300px';
+    wrap.style.height    = '360px';
 
     const chart = getOrCreateChart(id);
     chart.data.labels            = pairs.map(([l]) => l);
@@ -748,8 +752,6 @@
       }
     }
 
-    document.getElementById('response-count').textContent =
-      total + (total === 1 ? ' response' : ' responses');
   }
 
   // ─────────────────────────────────────────────────────────────
