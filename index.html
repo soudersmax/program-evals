@@ -370,11 +370,7 @@
   </main>
 
   <script>
-  // ─────────────────────────────────────────────────────────────
-  // CONFIGURATION — replace with your Apps Script deployment URL
-  // After deploying Code.gs as a Web App, paste the URL below.
-  // ─────────────────────────────────────────────────────────────
-  const APPS_SCRIPT_URL = 'https://script.google.com/a/macros/hollyhock.ca/s/AKfycbw0DykYK7Wkkf6x5ip2Km966zJjSN_AOvgFep5MW2bY9uOY2R7LHFQRIOLQuavIH9yMWw/exec';
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw0DykYK7Wkkf6x5ip2Km966zJjSN_AOvgFep5MW2bY9uOY2R7LHFQRIOLQuavIH9yMWw/exec';
 
   // ─────────────────────────────────────────────────────────────
   // Predefined options (must match form option text exactly)
@@ -382,20 +378,14 @@
   // "Other" write-ins and are excluded from the dashboard.
   // ─────────────────────────────────────────────────────────────
   const OPTIONS_INTENTION = [
-    'To deepen my understanding of myself',
-    'To help me navigate a life transition',
-    'To deepen my connection with the natural world',
-    'To explore Cortes Island and be active outdoors',
-    'To enjoy outdoor adventures',
-    'For professional training or continuing education',
-    'To rest and disconnect',
-    'To develop a new practice or deepen my existing practice',
-    'To explore my creativity',
-    'To make connections with other like-minded humans',
-    'To spend time with the presenter',
-    'To heal',
-    'Just to be at Hollyhock',
-    "I didn't have a particular intention"
+    'Rest and renewal',
+    'Personal growth and healing',
+    'Greater confidence in my leadership',
+    'A deeper understanding of justice and impacts of colonization',
+    'Tools for stronger relationships',
+    'Meaningful connections and networks',
+    'A deeper connection with nature',
+    'New ideas or clarity for my life or work'
   ];
 
   const OPTIONS_CHOICE_FACTORS = [
@@ -582,15 +572,21 @@
   // ─────────────────────────────────────────────────────────────
   // Multi-select counting helpers
   // ─────────────────────────────────────────────────────────────
+  function normForMatch(s) {
+    return s.trim().replace(/[.!?,]+$/, '').toLowerCase();
+  }
+
   function countByOptions(rows, col, options) {
     if (col < 0) return {};
     const counts = {};
     options.forEach(o => { counts[o] = 0; });
+    const lcOptions = options.map(normForMatch);
     rows.forEach(row => {
       const val = row[col] ? row[col].toString().trim() : '';
       if (!val) return;
-      val.split(', ').map(s => s.trim()).forEach(part => {
-        if (options.includes(part)) counts[part]++;
+      val.split(/,\s*/).map(s => s.trim()).filter(Boolean).forEach(part => {
+        const idx = lcOptions.indexOf(normForMatch(part));
+        if (idx >= 0) counts[options[idx]]++;
       });
     });
     return counts;
