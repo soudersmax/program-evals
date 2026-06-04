@@ -76,6 +76,7 @@
       align-items: center;
       gap: 1rem;
       flex-wrap: wrap;
+      justify-content: center;
     }
 
     .filter-group {
@@ -375,15 +376,6 @@
         <div class="no-data" id="no-data-factors">No responses for current filter.</div>
       </div>
 
-      <div class="chart-section">
-        <div class="chart-section-title">Program Takeaways</div>
-        <div class="chart-section-question">Which of these statements best summarizes what you are taking away from your program experience?</div>
-        <div class="chart-section-note">Multi-select — choose as many as apply</div>
-        <div class="chart-wrap" id="wrap-takeaways" style="height:320px">
-          <canvas id="chart-takeaways"></canvas>
-        </div>
-        <div class="no-data" id="no-data-takeaways">No responses for current filter.</div>
-      </div>
 
       <div class="chart-section">
         <div class="chart-section-title">Access Support</div>
@@ -828,10 +820,6 @@
     // Choice factors
     updateChart('factors',
       sortedNonZero(countByOptions(rows, colIdx.choiceFactors, OPTIONS_CHOICE_FACTORS)));
-
-    // Takeaways (substring match — options contain commas)
-    updateChart('takeaways',
-      sortedNonZero(countBySubstring(rows, colIdx.takeaways, OPTIONS_TAKEAWAYS)));
 
     // Access support — single-select with commas in option text
     updateChart('access',
