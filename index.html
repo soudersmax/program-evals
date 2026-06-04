@@ -149,6 +149,24 @@
 
     .hh-generator-btn:hover { background: #1a2d3a; }
 
+    .hh-nav-btn {
+      background: #95BC67;
+      color: #233C4D;
+      border: none;
+      border-radius: 4px;
+      padding: 0.5rem 1.25rem;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+
+    .hh-nav-btn:hover { background: #82a859; }
+
 
     /* ── Main content ── */
     .hh-main {
@@ -298,6 +316,7 @@
       </div>
       <div class="hh-btn-group">
         <a id="generator-link" href="#" target="_blank" class="hh-generator-btn">Generate Report</a>
+        <a id="nav-btn" href="#" class="hh-nav-btn"></a>
         <button class="hh-refresh-btn" id="refresh-btn" onclick="loadData()">↻ Refresh Data</button>
       </div>
     </div>
@@ -391,7 +410,19 @@
 
   <script>
   const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw0DykYK7Wkkf6x5ip2Km966zJjSN_AOvgFep5MW2bY9uOY2R7LHFQRIOLQuavIH9yMWw/exec';
+
+  // Values that differ between the Cortes and Vancouver pages
+  const SITE_CONFIG = {
+    sheetGid:         '819370598',
+    defaultLabel:     'All Cortes Programs',
+    programColSearch: 'program did you attend',
+    navButtonLabel:   'Go to Vancouver Programs',
+    navButtonUrl:     'vancouver.html',
+  };
+
   document.getElementById('generator-link').href = APPS_SCRIPT_URL;
+  document.getElementById('nav-btn').textContent  = SITE_CONFIG.navButtonLabel;
+  document.getElementById('nav-btn').href         = SITE_CONFIG.navButtonUrl;
 
   // ─────────────────────────────────────────────────────────────
   // Predefined options (must match form option text exactly)
@@ -467,7 +498,7 @@
   function buildColIdx() {
     colIdx = {
       timestamp:    0,  // always first column
-      program:      findCol('Which Cortes Island program'),
+      program:      findCol(SITE_CONFIG.programColSearch),
       rating:       findCol('How would you rate your overall program experience'),
       intention:    findCol('What was your intention'),
       choiceFactors:findCol('What factors influenced your choice'),
@@ -523,7 +554,8 @@
       setRefreshState(false);
       showStatus('error', 'Could not reach the data source.<br>Check that the Apps Script is deployed and the URL is correct.');
     };
-    script.src = APPS_SCRIPT_URL + '?action=data&callback=' + cbName;
+    const gidParam = SITE_CONFIG.sheetGid ? '&gid=' + SITE_CONFIG.sheetGid : '';
+    script.src = APPS_SCRIPT_URL + '?action=data' + gidParam + '&callback=' + cbName;
     document.head.appendChild(script);
   }
 
@@ -571,7 +603,7 @@
 
     const progSel = document.getElementById('program-filter');
     const prevProg = progSel.value;
-    progSel.innerHTML = '<option value="all">All programs</option>';
+    progSel.innerHTML = '<option value="all">' + SITE_CONFIG.defaultLabel + '</option>';
     Array.from(programs).sort().forEach(p => {
       const opt = document.createElement('option');
       opt.value = p;
