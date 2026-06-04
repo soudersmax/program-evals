@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hollyhock 2026 Vancouver Program Evaluations</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    /* ── Brand tokens (verify against 2026 Hollyhock Brand Guide) ── */
+    :root {
+      --navy:       #233C4D;
+      --teal:       #427C7D;
+      --gold:       #D6AD60;
+      --rust:       #CA5757;
+      --bg:         #F3F3EB;
+      --card:       #ffffff;
+      --border:     #d0cfc8;
+      --muted:      #888;
+      --text:       #233C4D;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      font-family: 'Montserrat', sans-serif;
+      color: var(--text);
+    }
+
+    /* ── Header ── */
+    .hh-header {
+      background: var(--navy);
+      color: #fff;
+      padding: 1.75rem 2.5rem;
+    }
+
+    .hh-header-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: baseline;
+      gap: 1.5rem;
+    }
+
+    .hh-logo {
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #fff;
+    }
+
+    .hh-title {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.75);
+      letter-spacing: 0.02em;
+    }
+
+    /* ── Controls bar ── */
+    .hh-controls {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2.5rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 1px 4px rgba(35,60,77,0.07);
+    }
+
+    .hh-controls-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .filter-group label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--teal);
+      white-space: nowrap;
+    }
+
+    .filter-group select {
+      padding: 0.45rem 0.75rem;
+      border: 1.5px solid var(--border);
+      border-radius: 4px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.85rem;
+      color: var(--navy);
+      background: #fff;
+      cursor: pointer;
+      min-width: 180px;
+    }
+
+    .filter-group select:focus { outline: none; border-color: var(--teal); }
+
+    .hh-btn-group {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .hh-refresh-btn {
+      background: var(--teal);
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 0.5rem 1.25rem;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+
+    .hh-refresh-btn:hover { background: #356566; }
+    .hh-refresh-btn:disabled { background: #a0a8ac; cursor: not-allowed; }
+
+    .hh-generator-btn {
+      background: var(--navy);
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 0.5rem 1.25rem;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+
+    .hh-generator-btn:hover { background: #1a2d3a; }
+
+    .hh-nav-btn {
+      background: #95BC67;
+      color: #233C4D;
+      border: none;
+      border-radius: 4px;
+      padding: 0.5rem 1.25rem;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+
+    .hh-nav-btn:hover { background: #82a859; }
+
+
+    /* ── Main content ── */
+    .hh-main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem 2.5rem 4rem;
+    }
+
+    /* ── Status banner ── */
+    .status-banner {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 2rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-bottom: 2rem;
+    }
+
+    .status-banner.error { border-color: #f5c6cb; background: #fff5f5; color: #c0392b; }
+
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--border);
+      border-top-color: var(--teal);
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+      margin: 0 auto 0.75rem;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Stat cards ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 2rem;
+    }
+
+    @media (max-width: 700px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
+
+    .stat-card {
+      background: var(--card);
+      border-radius: 6px;
+      padding: 1.25rem 1.5rem;
+      border: 1px solid var(--border);
+    }
+
+    .stat-label {
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--navy);
+      line-height: 1;
+    }
+
+    .stat-value.avg { color: var(--teal); }
+    .stat-value.total { color: var(--navy); }
+    .stat-value.small { font-size: 1.4rem; }
+
+    .stat-sub {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 0.3rem;
+    }
+
+    /* ── Chart sections ── */
+    .chart-section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1.5rem 1.75rem 1.75rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .chart-section-title {
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-bottom: 0.35rem;
+    }
+
+    .chart-section-question {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: 0.25rem;
+      line-height: 1.4;
+    }
+
+    .chart-section-note {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-bottom: 1.25rem;
+    }
+
+    .chart-wrap {
+      position: relative;
+      transition: height 0.2s ease;
+    }
+
+    .no-data {
+      display: none;
+      text-align: center;
+      padding: 2rem 0;
+      color: var(--muted);
+      font-size: 0.85rem;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="hh-header">
+    <div class="hh-header-inner">
+      <span class="hh-logo">Hollyhock</span>
+      <span class="hh-title">2026 Vancouver Program Evaluations</span>
+    </div>
+  </header>
+
+  <div class="hh-controls">
+    <div class="hh-controls-inner">
+      <div class="filter-group">
+        <label for="month-filter">Month</label>
+        <select id="month-filter" onchange="onFilterChange()">
+          <option value="all">All months</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="program-filter">Program</label>
+        <select id="program-filter" onchange="onFilterChange()">
+          <option value="all">All Vancouver Programs</option>
+        </select>
+      </div>
+      <div class="hh-btn-group">
+        <a id="generator-link" href="#" target="_blank" class="hh-generator-btn">Generate Report</a>
+        <a id="nav-btn" href="#" class="hh-nav-btn"></a>
+        <button class="hh-refresh-btn" id="refresh-btn" onclick="loadData()">↻ Refresh Data</button>
+      </div>
+    </div>
+  </div>
+
+  <main class="hh-main" id="main-content">
+    <div class="status-banner" id="status-banner">
+      <div class="spinner"></div>
+      <p>Loading data…</p>
+    </div>
+
+    <!-- Stats row (hidden until data loads) -->
+    <div class="stats-row" id="stats-row" style="display:none">
+      <div class="stat-card">
+        <div class="stat-label">Responses</div>
+        <div class="stat-value total" id="stat-total">—</div>
+        <div class="stat-sub">in current filter</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Avg Rating</div>
+        <div class="stat-value avg" id="stat-avg">—</div>
+        <div class="stat-sub">out of 10</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Min Rating</div>
+        <div class="stat-value small" id="stat-min">—</div>
+        <div class="stat-sub">out of 10</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Max Rating</div>
+        <div class="stat-value small" id="stat-max">—</div>
+        <div class="stat-sub">out of 10</div>
+      </div>
+    </div>
+
+    <!-- Chart sections (hidden until data loads) -->
+    <div id="charts-container" style="display:none">
+
+      <div class="chart-section">
+        <div class="chart-section-title">Attendee Intentions</div>
+        <div class="chart-section-question">What was your intention for attending this program?</div>
+        <div class="chart-section-note">Multi-select — respondents could choose up to 3</div>
+        <div class="chart-wrap" id="wrap-intention" style="height:520px">
+          <canvas id="chart-intention"></canvas>
+        </div>
+        <div class="no-data" id="no-data-intention">No responses for current filter.</div>
+      </div>
+
+      <div class="chart-section">
+        <div class="chart-section-title">Factors Influencing Choice</div>
+        <div class="chart-section-question">What factors influenced your choice to attend this program?</div>
+        <div class="chart-section-note">Multi-select — respondents could choose all that apply</div>
+        <div class="chart-wrap" id="wrap-factors" style="height:300px">
+          <canvas id="chart-factors"></canvas>
+        </div>
+        <div class="no-data" id="no-data-factors">No responses for current filter.</div>
+      </div>
+
+      <div class="chart-section">
+        <div class="chart-section-title">Program Takeaways</div>
+        <div class="chart-section-question">Which of these statements best summarizes what you are taking away from your program experience?</div>
+        <div class="chart-section-note">Multi-select — choose as many as apply</div>
+        <div class="chart-wrap" id="wrap-takeaways" style="height:320px">
+          <canvas id="chart-takeaways"></canvas>
+        </div>
+        <div class="no-data" id="no-data-takeaways">No responses for current filter.</div>
+      </div>
+
+      <div class="chart-section">
+        <div class="chart-section-title">Access Support</div>
+        <div class="chart-section-question">Did you apply for a Hollyhock bursary or scholarship to attend this program?</div>
+        <div class="chart-section-note">Single-select</div>
+        <div class="chart-wrap" id="wrap-access" style="height:160px">
+          <canvas id="chart-access"></canvas>
+        </div>
+        <div class="no-data" id="no-data-access">No responses for current filter.</div>
+      </div>
+
+      <div class="chart-section">
+        <div class="chart-section-title">Online Program Interest</div>
+        <div class="chart-section-question">Would you be interested in participating in online classes, workshops, or programs in the future?</div>
+        <div class="chart-section-note">Multi-select</div>
+        <div class="chart-wrap" id="wrap-online" style="height:200px">
+          <canvas id="chart-online"></canvas>
+        </div>
+        <div class="no-data" id="no-data-online">No responses for current filter.</div>
+      </div>
+
+    </div><!-- /charts-container -->
+  </main>
+
+  <script>
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw0DykYK7Wkkf6x5ip2Km966zJjSN_AOvgFep5MW2bY9uOY2R7LHFQRIOLQuavIH9yMWw/exec';
+
+  // Values that differ between the Cortes and Vancouver pages
+  const SITE_CONFIG = {
+    sheetGid:         '649946635',
+    defaultLabel:     'All Vancouver Programs',
+    programColSearch: 'program did you attend',
+    navButtonLabel:   'Go to Cortes Programs',
+    navButtonUrl:     'index.html',
+  };
+
+  document.getElementById('generator-link').href = APPS_SCRIPT_URL;
+  document.getElementById('nav-btn').textContent  = SITE_CONFIG.navButtonLabel;
+  document.getElementById('nav-btn').href         = SITE_CONFIG.navButtonUrl;
+
+  // ─────────────────────────────────────────────────────────────
+  // Predefined options (must match form option text exactly)
+  // Used to count responses; values not in these lists are
+  // "Other" write-ins and are excluded from the dashboard.
+  // ─────────────────────────────────────────────────────────────
+  const OPTIONS_INTENTION = [
+    'Rest and renewal',
+    'Personal growth and healing',
+    'Greater confidence in my leadership',
+    'A deeper understanding of justice and impacts of colonization',
+    'Tools for stronger relationships',
+    'Meaningful connections and networks',
+    'A deeper connection with nature',
+    'New ideas or clarity for my life or work'
+  ];
+
+  const OPTIONS_CHOICE_FACTORS = [
+    'I was interested in the presenter',
+    'the length of the program',
+    'the timing of the program (month / season)',
+    'the location (Vancouver)',
+    'Affordability / price point',
+    'Subject Matter',
+    'Program Description'
+  ];
+
+  const OPTIONS_ACCESS = [
+    'Yes, and I received one.',
+    "I applied but didn't receive one.",
+    'No'
+  ];
+
+  const OPTIONS_ONLINE = [
+    'Online offerings from this presenter',
+    'Online offerings from this and other Hollyhock presenters',
+    'Leadership programs and training',
+    'Community-led programs and workshops',
+    "I'm not currently interested in online offerings"
+  ];
+
+  // Commas appear within these options — use substring matching, not splitting
+  const OPTIONS_TAKEAWAYS = [
+    'Restoration, peace and deeper presence',
+    "Transformational growth, healing, and sense of belonging as one's whole self",
+    'Greater capacity for inspired and effective leadership (of self and/or others)',
+    'Greater awareness of power, justice, and the impacts of colonization',
+    'Sense of responsibility to learn/unlearn in order to build more whole relationships',
+    'Lasting relationships, deep networks, cross-pollination and collaboration',
+    'Deep sense of interconnectedness and responsibility to the natural world'
+  ];
+
+  // ─────────────────────────────────────────────────────────────
+  // State
+  // ─────────────────────────────────────────────────────────────
+  let rawData    = null; // 2D array from Apps Script: [headers, ...rows]
+  let headers    = [];
+  let dataRows   = [];
+  let colIdx     = {};   // column indices keyed by name
+  let chartMap   = {};   // Chart instances
+
+  // ─────────────────────────────────────────────────────────────
+  // Column finder (case-insensitive substring match)
+  // ─────────────────────────────────────────────────────────────
+  function findCol(partial) {
+    const p = partial.toLowerCase();
+    for (let i = 0; i < headers.length; i++) {
+      if (headers[i].toString().toLowerCase().includes(p)) return i;
+    }
+    return -1;
+  }
+
+  function buildColIdx() {
+    colIdx = {
+      timestamp:    0,  // always first column
+      program:      findCol(SITE_CONFIG.programColSearch),
+      rating:       findCol('How would you rate your overall program experience'),
+      intention:    findCol('What was your intention'),
+      choiceFactors:findCol('What factors influenced your choice'),
+      takeaways:    findCol('Which of these statements best summarizes'),
+      // Try new wording first, fall back to old wording
+      access:       findCol('access support') >= 0
+                      ? findCol('access support')
+                      : findCol('scholarship to attend'),
+      online:       findCol('Would you be interested in participating in online')
+    };
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // Data loading via JSONP
+  // ─────────────────────────────────────────────────────────────
+  function loadData() {
+    if (APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_DEPLOYMENT_URL_HERE') {
+      showStatus('error', 'No data source configured.<br>Please set <code>APPS_SCRIPT_URL</code> in vancouver.html after deploying the Apps Script.');
+      return;
+    }
+
+    setRefreshState(true);
+    showStatus('loading', 'Fetching latest data…');
+
+    // Remove any previous JSONP script
+    const old = document.getElementById('hh-jsonp');
+    if (old) old.remove();
+
+    const cbName = 'hhData_' + Date.now();
+
+    window[cbName] = function(data) {
+      delete window[cbName];
+      document.getElementById('hh-jsonp').remove();
+      setRefreshState(false);
+
+      if (!Array.isArray(data) || data.length < 2) {
+        showStatus('error', 'Received empty or invalid data from the sheet.');
+        return;
+      }
+
+      headers  = data[0].map(h => h.toString());
+      dataRows = data.slice(1);
+      buildColIdx();
+      populateFilters();
+      renderAll();
+      hideStatus();
+    };
+
+    const script = document.createElement('script');
+    script.id = 'hh-jsonp';
+    script.onerror = function() {
+      delete window[cbName];
+      setRefreshState(false);
+      showStatus('error', 'Could not reach the data source.<br>Check that the Apps Script is deployed and the URL is correct.');
+    };
+    const gidParam = SITE_CONFIG.sheetGid ? '&gid=' + SITE_CONFIG.sheetGid : '';
+    script.src = APPS_SCRIPT_URL + '?action=data' + gidParam + '&callback=' + cbName;
+    document.head.appendChild(script);
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // Filter population
+  // ─────────────────────────────────────────────────────────────
+  function populateFilters() {
+    // Months — derived from program title prefix (MM/DD format, year is always 2026)
+    const months = new Map(); // key (MM) → label
+    dataRows.forEach(row => {
+      const prog = row[colIdx.program] ? row[colIdx.program].toString().trim() : '';
+      const match = prog.match(/^(\d{2})\/\d{2}/);
+      if (!match) return;
+      const monthNum = match[1];
+      if (!months.has(monthNum)) {
+        const label = new Date(2026, parseInt(monthNum, 10) - 1, 1)
+          .toLocaleString('default', { month: 'long' }) + ' 2026';
+        months.set(monthNum, label);
+      }
+    });
+
+    const monthSel = document.getElementById('month-filter');
+    const prevMonth = monthSel.value;
+    monthSel.innerHTML = '<option value="all">All months</option>';
+    Array.from(months.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .forEach(([key, label]) => {
+        const opt = document.createElement('option');
+        opt.value = key;
+        opt.textContent = label;
+        monthSel.appendChild(opt);
+      });
+    if (prevMonth && monthSel.querySelector(`[value="${prevMonth}"]`)) {
+      monthSel.value = prevMonth;
+    }
+
+    // Programs
+    const programs = new Set();
+    if (colIdx.program >= 0) {
+      dataRows.forEach(row => {
+        const val = row[colIdx.program];
+        if (val) programs.add(val.toString().trim());
+      });
+    }
+
+    const progSel = document.getElementById('program-filter');
+    const prevProg = progSel.value;
+    progSel.innerHTML = '<option value="all">' + SITE_CONFIG.defaultLabel + '</option>';
+    Array.from(programs).sort().forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p;
+      opt.textContent = p;
+      progSel.appendChild(opt);
+    });
+    if (prevProg && Array.from(progSel.options).some(o => o.value === prevProg)) {
+      progSel.value = prevProg;
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // Filtering
+  // ─────────────────────────────────────────────────────────────
+  function getFilteredRows() {
+    const month   = document.getElementById('month-filter').value;
+    const program = document.getElementById('program-filter').value;
+
+    return dataRows.filter(row => {
+      if (month !== 'all') {
+        const prog = colIdx.program >= 0 ? row[colIdx.program] : '';
+        const match = prog ? prog.toString().match(/^(\d{2})\/\d{2}/) : null;
+        if (!match || match[1] !== month) return false;
+      }
+      if (program !== 'all') {
+        const prog = colIdx.program >= 0 ? row[colIdx.program] : '';
+        if (!prog || prog.toString().trim() !== program) return false;
+      }
+      return true;
+    });
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // Multi-select counting helpers
+  // ─────────────────────────────────────────────────────────────
+  function normForMatch(s) {
+    return s.trim().replace(/[.!?,]+$/, '').toLowerCase();
+  }
+
+  function countByOptions(rows, col, options) {
+    if (col < 0) return {};
+    const counts = {};
+    options.forEach(o => { counts[o] = 0; });
+    const lcOptions = options.map(normForMatch);
+    rows.forEach(row => {
+      const val = row[col] ? row[col].toString().trim() : '';
+      if (!val) return;
+      val.split(/,\s*/).map(s => s.trim()).filter(Boolean).forEach(part => {
+        const idx = lcOptions.indexOf(normForMatch(part));
+        if (idx >= 0) counts[options[idx]]++;
+      });
+    });
+    return counts;
+  }
+
+  // For columns whose options contain commas — use substring matching
+  function countBySubstring(rows, col, options) {
+    if (col < 0) return {};
+    const counts = {};
+    options.forEach(o => { counts[o] = 0; });
+    rows.forEach(row => {
+      const val = row[col] ? row[col].toString().trim() : '';
+      if (!val) return;
+      options.forEach(opt => {
+        if (val.includes(opt)) counts[opt]++;
+      });
+    });
+    return counts;
+  }
+
+  // For columns with dynamic (unknown) options — discover values from data
+  function countDynamic(rows, col) {
+    if (col < 0) return {};
+    const counts = {};
+    rows.forEach(row => {
+      const val = row[col] ? row[col].toString().trim() : '';
+      if (!val) return;
+      val.split(', ').map(s => s.trim()).filter(Boolean).forEach(part => {
+        counts[part] = (counts[part] || 0) + 1;
+      });
+    });
+    return counts;
+  }
+
+  // For single-select columns where options contain commas — match full value, no splitting
+  function countSingleSelect(rows, col, options) {
+    if (col < 0) return {};
+    const counts = {};
+    options.forEach(o => { counts[o] = 0; });
+    const normOpts = options.map(normForMatch);
+    rows.forEach(row => {
+      const val = row[col] ? row[col].toString().trim() : '';
+      if (!val) return;
+      const idx = normOpts.indexOf(normForMatch(val));
+      if (idx >= 0) counts[options[idx]]++;
+    });
+    return counts;
+  }
+
+  function sortedNonZero(counts) {
+    return Object.entries(counts)
+      .filter(([, v]) => v > 0)
+      .sort(([, a], [, b]) => b - a);
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // Chart management
+  // ─────────────────────────────────────────────────────────────
+  function getOrCreateChart(id) {
+    if (chartMap[id]) return chartMap[id];
+    const ctx = document.getElementById('chart-' + id).getContext('2d');
+    const chart = new Chart(ctx, {
+      type: 'bar',
+      data: { labels: [], datasets: [{ data: [], backgroundColor: '#427C7D', borderRadius: 3, borderSkipped: false }] },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => ' ' + ctx.parsed.y + (ctx.parsed.y === 1 ? ' response' : ' responses')
+            }
+          }
+        },
+        scales: {
+          x: {
+            ticks: {
+              color: '#233C4D',
+              font: { family: 'Montserrat', size: 11 },
+              maxRotation: 0,
+              minRotation: 0,
+              callback: function(val) {
+                const label = this.getLabelForValue(val);
+                const words = label.split(' ');
+                const lines = [];
+                let line = '';
+                words.forEach(word => {
+                  if ((line + ' ' + word).trim().length > 16) {
+                    if (line) lines.push(line);
+                    line = word;
+                  } else {
+                    line = (line + ' ' + word).trim();
+                  }
+                });
+                if (line) lines.push(line);
+                return lines;
+              }
+            },
+            grid: { display: false }
+          },
+          y: {
+            beginAtZero: true,
+            ticks: { precision: 0, color: '#888', font: { family: 'Montserrat', size: 11 } },
+            grid: { color: '#ebebeb' }
+          }
+        }
+      }
+    });
+    chartMap[id] = chart;
+    return chart;
+  }
+
+  function updateChart(id, pairs) {
+    const wrap   = document.getElementById('wrap-' + id);
+    const noData = document.getElementById('no-data-' + id);
+
+    if (pairs.length === 0) {
+      wrap.style.display   = 'none';
+      noData.style.display = 'block';
+      return;
+    }
+
+    wrap.style.display   = 'block';
+    noData.style.display = 'none';
+    wrap.style.height    = '360px';
+
+    const chart = getOrCreateChart(id);
+    chart.data.labels            = pairs.map(([l]) => l);
+    chart.data.datasets[0].data  = pairs.map(([, v]) => v);
+    chart.update('none');
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // Stats
+  // ─────────────────────────────────────────────────────────────
+  function updateStats(rows) {
+    const total = rows.length;
+    document.getElementById('stat-total').textContent = total;
+
+    if (colIdx.rating >= 0) {
+      const ratings = rows
+        .map(r => parseFloat(r[colIdx.rating]))
+        .filter(v => !isNaN(v) && v > 0);
+
+      if (ratings.length > 0) {
+        const avg = ratings.reduce((a, b) => a + b, 0) / ratings.length;
+        document.getElementById('stat-avg').textContent = avg.toFixed(1);
+        document.getElementById('stat-min').textContent = Math.min(...ratings);
+        document.getElementById('stat-max').textContent = Math.max(...ratings);
+      } else {
+        ['stat-avg', 'stat-min', 'stat-max'].forEach(id => {
+          document.getElementById(id).textContent = '—';
+        });
+      }
+    }
+
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // Render all sections
+  // ─────────────────────────────────────────────────────────────
+  function renderAll() {
+    const rows = getFilteredRows();
+
+    updateStats(rows);
+
+    // Intentions
+    updateChart('intention',
+      sortedNonZero(countByOptions(rows, colIdx.intention, OPTIONS_INTENTION)));
+
+    // Choice factors
+    updateChart('factors',
+      sortedNonZero(countByOptions(rows, colIdx.choiceFactors, OPTIONS_CHOICE_FACTORS)));
+
+    // Takeaways (substring match — options contain commas)
+    updateChart('takeaways',
+      sortedNonZero(countBySubstring(rows, colIdx.takeaways, OPTIONS_TAKEAWAYS)));
+
+    // Access support — single-select with commas in option text
+    updateChart('access',
+      sortedNonZero(countSingleSelect(rows, colIdx.access, OPTIONS_ACCESS)));
+
+    // Online interest — predefined multi-select options only
+    updateChart('online',
+      sortedNonZero(countByOptions(rows, colIdx.online, OPTIONS_ONLINE)));
+
+    document.getElementById('stats-row').style.display         = '';
+    document.getElementById('charts-container').style.display  = '';
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // UI helpers
+  // ─────────────────────────────────────────────────────────────
+  function onFilterChange() {
+    if (!dataRows.length) return;
+    renderAll();
+  }
+
+  function showStatus(type, html) {
+    const el = document.getElementById('status-banner');
+    el.className = 'status-banner' + (type === 'error' ? ' error' : '');
+    el.innerHTML = type === 'loading'
+      ? '<div class="spinner"></div><p>' + html + '</p>'
+      : '<p>' + html + '</p>';
+    el.style.display = 'block';
+  }
+
+  function hideStatus() {
+    document.getElementById('status-banner').style.display = 'none';
+  }
+
+  function setRefreshState(loading) {
+    const btn = document.getElementById('refresh-btn');
+    btn.disabled    = loading;
+    btn.textContent = loading ? '↻ Loading…' : '↻ Refresh Data';
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // Init
+  // ─────────────────────────────────────────────────────────────
+  loadData();
+  </script>
+</body>
+</html>
