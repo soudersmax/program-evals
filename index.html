@@ -419,6 +419,20 @@
     'Program Description'
   ];
 
+  const OPTIONS_ACCESS = [
+    'Yes, and I received one.',
+    "I applied but didn't receive one.",
+    'No'
+  ];
+
+  const OPTIONS_ONLINE = [
+    'Online offerings from this presenter',
+    'Online offerings from this and other Hollyhock presenters',
+    'Leadership programs and training',
+    'Community-led programs and workshops',
+    "I'm not currently interested in online offerings"
+  ];
+
   // Commas appear within these options — use substring matching, not splitting
   const OPTIONS_TAKEAWAYS = [
     'Restoration, peace and deeper presence',
@@ -644,6 +658,21 @@
     return counts;
   }
 
+  // For single-select columns where options contain commas — match full value, no splitting
+  function countSingleSelect(rows, col, options) {
+    if (col < 0) return {};
+    const counts = {};
+    options.forEach(o => { counts[o] = 0; });
+    const normOpts = options.map(normForMatch);
+    rows.forEach(row => {
+      const val = row[col] ? row[col].toString().trim() : '';
+      if (!val) return;
+      const idx = normOpts.indexOf(normForMatch(val));
+      if (idx >= 0) counts[options[idx]]++;
+    });
+    return counts;
+  }
+
   function sortedNonZero(counts) {
     return Object.entries(counts)
       .filter(([, v]) => v > 0)
@@ -774,13 +803,13 @@
     updateChart('takeaways',
       sortedNonZero(countBySubstring(rows, colIdx.takeaways, OPTIONS_TAKEAWAYS)));
 
-    // Access support (dynamic — options unknown at build time)
+    // Access support — single-select with commas in option text
     updateChart('access',
-      sortedNonZero(countDynamic(rows, colIdx.access)));
+      sortedNonZero(countSingleSelect(rows, colIdx.access, OPTIONS_ACCESS)));
 
-    // Online interest (dynamic)
+    // Online interest — predefined multi-select options only
     updateChart('online',
-      sortedNonZero(countDynamic(rows, colIdx.online)));
+      sortedNonZero(countByOptions(rows, colIdx.online, OPTIONS_ONLINE)));
 
     document.getElementById('stats-row').style.display         = '';
     document.getElementById('charts-container').style.display  = '';
